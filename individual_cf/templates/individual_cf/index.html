@@ -1,0 +1,210 @@
+{% extends "base.html" %}
+
+{% block page_content %}
+<div class="container mb-5">
+
+    <div class="mt-5">
+        <h4>Individual Cash Flow Calculator</h4>
+        <h6>A cash flow calculator made by Andrew Crumpler</h6>
+        <p class="mt-3">This calculator is intended to calculate individual cash flows NPV.</p>
+    </div>
+
+    <!-- If form has no errors and has been filled out -->
+    {% if not form.errors and form.cleaned_data is not None %}
+    <div class="mt-4 mb-4 pb-2 border">
+        <h4 class="p-2 border-bottom">Results</h4>
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-6">
+                    Account Number:
+                </div>
+                <div class="col-sm-3">
+                    <strong>{{ results.account_number }}</strong>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    Expected Cash Flows:
+                </div>
+                <div class="col-sm-3">
+                    <strong>{{ results.actual_total }}</strong>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    Present Value of Cash Flows:
+                </div>
+                <div class="col-sm-3">
+                    <strong>{{ results.inflation_adjusted_total }}</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+        <p>
+            <button aria-controls="collapseExample" aria-expanded="false" class="btn btn-primary"
+                    data-target="#collapseExample" data-toggle="collapse" type="button">
+                Click to View Full Cash Flow (html table needs work)
+            </button>
+        </p>
+        <div class="collapse" id="collapseExample">
+            <div class="card card-body">
+                {{ results.appended_df.to_html | safe}}
+            </div>
+        </div>
+    {% endif %}
+
+    <form action="{% url 'index' %}" class="mt-5" method="POST">
+        {% csrf_token %}
+
+        {{ form.non_field_errors }}
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ form.account_number.label_tag }}
+                {{ form.account_number }}
+                {{ form.account_number.errors }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.months_to_maturity.label_tag }}
+                {{ form.months_to_maturity }}
+                {{ form.months_to_maturity.errors }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ form.payment_type.label_tag }}
+                {{ form.payment_type }}
+                <a aria-controls="annual-rate-help" aria-expanded="false" data-toggle="collapse"
+                   href="#annual-rate-help" role="button">
+                    <small class="form-text text-muted">Show Help</small>
+                </a>
+                <small class="collapse form-text text-muted" id="annual-rate-help">
+                    From 1929 to 2018, the <a href="https://en.wikipedia.org/wiki/S%26P_500_Index" target="_blank">S&P
+                    500</a> averaged a pre-tax annual total return (with dividends reinvested) of 11.25%, with a high of
+                    53.99% in 1933 and a low of -43.34% in 1931. Note that investment results can vary based on a number
+                    of factors, including asset allocation, taxes, and fees. For reference, the Vanguard Wellington
+                    mutual fund (<a href="https://investor.vanguard.com/mutual-funds/profile/overview/vwelx"
+                                    target="_blank">VWELX</a>), which aims to invest about two-thirds of its assets in
+                    stocks and one-third in bonds, averaged a pre-tax annual total return of 8.26% from July 1929 to
+                    April 2019.
+                </small>
+                {{ form.payment_type.errors }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.coupon_type.label_tag }}
+                {{ form.coupon_type }}
+                <a aria-controls="compounds-per-year-help" aria-expanded="false" data-toggle="collapse"
+                   href="#compounds-per-year-help" role="button">
+                    <small class="form-text text-muted">Show Help</small>
+                </a>
+                <small class="collapse form-text text-muted" id="compounds-per-year-help">
+                    Select "Annually" here if you entered an annual rate of return that already considers compounding
+                    (like APY for savings accounts and CDs, or total return for stocks and mutual funds/ETFs).
+                </small>
+                {{ form.coupon_type.errors }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ form.lgd.label_tag }}
+                {{ form.lgd }}
+                {{ form.lgd.errors }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.recovery_lag.label_tag }}
+                {{ form.recovery_lag }}
+                {{ form.recovery_lag.errors }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ form.amortization_term.label_tag }}
+                {{ form.amortization_term }}
+                {{ form.amortization_term.errors }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.coupon_rate.label_tag }}
+                {{ form.coupon_rate }}
+                <a aria-controls="annual-inflation-help" aria-expanded="false" data-toggle="collapse"
+                   href="#annual-inflation-help" role="button">
+                    <small class="form-text text-muted">Show Help</small>
+                </a>
+                <small class="collapse form-text text-muted" id="annual-inflation-help">
+                    From 1929 to 2018, the average annual inflation rate was 3.10%, with a high of 18.1% in 1946 and a
+                    low of -10.3% (deflation) in 1932. [<a href="https://www.bls.gov/cpi/data.htm" target="_blank">Source</a>]
+                </small>
+                {{ form.coupon_rate.errors }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ form.bank_balance.label_tag }}
+                {{ form.bank_balance }}
+                {{ form.bank_balance.errors }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.smm.label_tag }}
+                {{ form.smm }}
+                <a aria-controls="annual-inflation-help" aria-expanded="false" data-toggle="collapse"
+                   href="#annual-inflation-help" role="button">
+                    <small class="form-text text-muted">Show Help</small>
+                </a>
+                <small class="collapse form-text text-muted" id="annual-inflation-help">
+                    From 1929 to 2018, the average annual inflation rate was 3.10%, with a high of 18.1% in 1946 and a
+                    low of -10.3% (deflation) in 1932. [<a href="https://www.bls.gov/cpi/data.htm" target="_blank">Source</a>]
+                </small>
+                {{ form.smm.errors }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ form.expected_cf.label_tag }}
+                {{ form.expected_cf }}
+                {{ form.expected_cf.errors }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.carrying_value.label_tag }}
+                {{ form.carrying_value }}
+                <a aria-controls="annual-inflation-help" aria-expanded="false" data-toggle="collapse"
+                   href="#annual-inflation-help" role="button">
+                    <small class="form-text text-muted">Show Help</small>
+                </a>
+                <small class="collapse form-text text-muted" id="annual-inflation-help">
+                    From 1929 to 2018, the average annual inflation rate was 3.10%, with a high of 18.1% in 1946 and a
+                    low of -10.3% (deflation) in 1932. [<a href="https://www.bls.gov/cpi/data.htm" target="_blank">Source</a>]
+                </small>
+                {{ form.carrying_value.errors }}
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="form-group col-md-6">
+                {{ form.discount_rate.label_tag }}
+                {{ form.discount_rate }}
+                {{ form.discount_rate.errors }}
+            </div>
+            <div class="form-group col-md-6">
+                {{ form.cdr.label_tag }}
+                {{ form.cdr }}
+                <a aria-controls="annual-inflation-help" aria-expanded="false" data-toggle="collapse"
+                   href="#annual-inflation-help" role="button">
+                    <small class="form-text text-muted">Show Help</small>
+                </a>
+                <small class="collapse form-text text-muted" id="annual-inflation-help">
+                    From 1929 to 2018, the average annual inflation rate was 3.10%, with a high of 18.1% in 1946 and a
+                    low of -10.3% (deflation) in 1932. [<a href="https://www.bls.gov/cpi/data.htm" target="_blank">Source</a>]
+                </small>
+                {{ form.cdr.errors }}
+            </div>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Calculate</button>
+    </form>
+
+</div>
+{% endblock %}

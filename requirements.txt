@@ -1,5 +1,5 @@
 Babel==2.7.0
-Django==2.2.7
+Django==2.2.20
 django-crispy-forms==1.8.1
 gunicorn==19.9.0
 numpy==1.18.0
